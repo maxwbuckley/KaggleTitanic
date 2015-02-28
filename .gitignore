@@ -1,0 +1,7 @@
+*.pyc
+*.Rout
+*~
+/processedcsv/*
+.RData
+.Rhistory
+
