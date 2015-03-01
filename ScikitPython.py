@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from sklearn.metrics import roc_curve, auc
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.cross_validation import cross_val_score, LeaveOneOut
 from scipy.stats import sem
@@ -22,8 +23,9 @@ from sklearn import preprocessing
 from sklearn.feature_extraction import DictVectorizer as DV
 from sklearn.ensemble import AdaBoostRegressor
 
+columnList = ['Sex', 'Pclass', 'Title', 'SibSp','Parch' ]
 
-def prepDataSet():
+def prepDataSet(columnList):
   """ Returns our trainingset all vectorized and ready for use, our testingset
       and our trainingset labels """
 
@@ -36,9 +38,6 @@ def prepDataSet():
   # removed NA's in the R script.
   assert(list(pdtrainframe.columns.values)==list(pdtestframe.columns.values))
 
-
-  columnList = ['Sex', 'Age', 'Pclass', 'Fare', 'AgeClass', 'FamilySize',
-                'Embarked', 'Ticket', 'Cabin']
   trainingFrame = pdtrainframe[columnList]
   testingFrame = pdtestframe[columnList]
 
@@ -124,6 +123,58 @@ def trainMediumModels(dataset, datasettest, traininglabels):
   print adaginipred.shape, titanic_X_test.shape
   #writeOutput(adaentropypred, "Highadaentropytree")
 
-trainingSet, testingSet, trainingLabels = prepDataSet()
 
-trainMediumModels(trainingSet, testingSet, trainingLabels)
+trainingSet, testingSet, trainingLabels = prepDataSet(columnList)
+
+X_train, X_test, Y_train, Y_test = train_test_split(trainingSet, trainingLabels, test_size=0.20, random_state=42)
+#trainMediumModels(trainingSet, testingSet, trainingLabels)
+
+rfclf = RandomForestClassifier(n_estimators=10, criterion='gini', max_depth=None)
+rfclf.fit(X_train, Y_train)
+
+Y_score = rfclf.predict_proba(X_test)
+
+fpr, tpr, _ = roc_curve(Y_test[:], Y_score[:, 1])
+roc_auc = auc(fpr, tpr)
+print fpr, tpr, roc_auc
+
+
+def plotROC(fpr, tpr, roc_auc):
+  """ PLots a ROC Curve"""
+  plt.figure()
+  plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % roc_auc)
+  plt.plot([0, 1], [0, 1], 'k--')
+  plt.xlim([0.0, 1.0])
+  plt.ylim([0.0, 1.05])
+  plt.xlabel('False Positive Rate')
+  plt.ylabel('True Positive Rate')
+  plt.title('Receiver operating characteristic example')
+  plt.legend(loc="lower right")
+  plt.show()
+
+  # Plot ROC curve
+  plt.figure()
+  plt.plot(fpr, tpr,
+           label='micro-average ROC curve (area = {0:0.2f})'
+                 ''.format(roc_auc))
+  plt.plot(fpr, tpr, label='ROC curve of class {0} (area = {1:0.2f})'
+                                     ''.format(1,roc_auc))
+
+  plt.plot([0, 1], [0, 1], 'k--')
+  plt.xlim([0.0, 1.0])
+  plt.ylim([0.0, 1.05])
+  plt.xlabel('False Positive Rate')
+  plt.ylabel('True Positive Rate')
+  plt.title('Some extension of Receiver operating characteristic to multi-class')
+  plt.legend(loc="lower right")
+  plt.show()
+
+plotROC(fpr, tpr, roc_auc)
+
+
+
+
+
+
+
+
