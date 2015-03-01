@@ -40,8 +40,16 @@ processData <- function(data){
   data$Pclass <- as.factor(data$Pclass)
   data$Sex <- as.factor(data$Sex)
   data$Title <- as.factor(data$Title)
+  data$Cabin<-substring(data$Cabin,1,1)  
+  data$Embarked[data$Embarked==""]<-"S"
+  data$Cabin[data$Cabin%in%c("F","G","T")]<-""
+  data$Ticket<-gsub("[0-9. ]*","",data$Ticket)
+  data$Ticket<-toupper(gsub("/.*","",data$Ticket))
+  data$Ticket[!(data$Ticket%in%rownames(table(toupper(data$Ticket))[table(toupper(data$Ticket))>10]))]<-""
+  data$Ticket[data$Ticket==""]<-"ZZZ"
+  data$Cabin[data$Cabin==""]<-"ZZZ"
   
-  return(data);
+return(data);
 }
 
 data<-processData(data)
@@ -53,8 +61,7 @@ for(j in 1:length(avgagetitle)){
   data$Age[is.na(data$Age) & data$Title==rownames(avgagetitle)[j]]<-avgagetitle[j]
   test$Age[is.na(test$Age) & test$Title==rownames(avgagetitle)[j]]<-avgagetitle[j]  
   data$AgeClass<- data$Age*as.numeric(as.character(data$Pclass))
-  test$AgeClass<- test$Age*as.numeric(as.character(test$Pclass))
-  
+  test$AgeClass<- test$Age*as.numeric(as.character(test$Pclass))  
 }
 
 ##TODO Fix Later

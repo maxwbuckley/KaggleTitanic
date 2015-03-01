@@ -4,4 +4,6 @@
 /processedcsv/*
 .RData
 .Rhistory
-
+/outputcsv/*
+modelsuccess.txt
+agg.csv
